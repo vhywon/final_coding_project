@@ -1,0 +1,23 @@
+certifi==2025.1.31
+charset-normalizer==3.4.1
+contourpy @ file:///Users/runner/miniforge3/conda-bld/contourpy_1731428322248/work
+cycler @ file:///home/conda/feedstock_root/build_artifacts/cycler_1733332471406/work
+fonttools @ file:///Users/runner/miniforge3/conda-bld/fonttools_1738203758747/work
+idna==3.10
+iniconfig==2.0.0
+kiwisolver @ file:///Users/runner/miniforge3/conda-bld/kiwisolver_1725459246621/work
+matplotlib==3.10.0
+munkres==1.1.4
+numpy @ file:///Users/runner/miniforge3/conda-bld/numpy_1737331108057/work/dist/numpy-2.2.2-cp313-cp313-macosx_10_13_x86_64.whl#sha256=239a302eefaedb9406f6fe9b394f5e4972a375c51efcafde629aaf7e827ff362
+packaging @ file:///home/conda/feedstock_root/build_artifacts/packaging_1733203243479/work
+pillow @ file:///Users/runner/miniforge3/conda-bld/pillow_1735929727323/work
+pluggy==1.5.0
+pyparsing @ file:///home/conda/feedstock_root/build_artifacts/pyparsing_1735698276679/work
+pytest==8.3.5
+python-dateutil @ file:///home/conda/feedstock_root/build_artifacts/python-dateutil_1733215673016/work
+requests==2.32.3
+resources==0.0.1
+six @ file:///home/conda/feedstock_root/build_artifacts/six_1733380938961/work
+staty==1.2.4
+tornado @ file:///Users/runner/miniforge3/conda-bld/tornado_1732615916717/work
+urllib3==2.3.0
