@@ -1,4 +1,4 @@
-""" """
+""" unit tests for main.py """
 
 import unittest
 from unittest.mock import patch, Mock
