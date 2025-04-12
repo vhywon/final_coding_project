@@ -1,17 +1,70 @@
+"""
+Description:
+This Python script is a command-line tool for validating HGVS (Human Genome Variation Society) variants and
+retrieving related classification data from NCBI ClinVar. It performs two main tasks:
+**************
+HGVS Variant Validation: The user provides an HGVS variant and a genome build (GRCh37 or GRCh38).
+The tool first attempts to validate the variant
+via the VariantValidator API using both RefSeq and Ensembl endpoints. Validation includes handling various edge cases
+like timeouts, request errors, and JSON parsing issues.
+**************
+ClinVar Query & Classification Extraction: Once validated, the script queries the NCBI ClinVar database using the
+eSearch and eSummary APIs to retrieve relevant  clinical data associated with the variant.
+It extracts and displays the following classifications:
+1. Germline Classification
+2. Clinical Impact Classification
+3. Oncogenicity Classification
+**************
+Key Features
+API Integration:
+VariantValidator API: Validates the syntax and correctness of the HGVS variant.
+NCBI ClinVar API: Searches for clinical interpretations of the variant.
+**************
+Robust Error Handling:
+Catches and logs timeouts, HTTP errors, decoding issues, invalid inputs, and unexpected exceptions.
+Uses logging to record detailed diagnostics to a log file named clinvar_validation.log.
+Mocking & Testing Support: Though not shown in this code, the architecture supports easy unit testing through
+mocking external API calls.
+**************
+User Interaction:
+Interactive prompts collect the variant and genome build.
+Output is printed to the terminal with clear messages for both success and failure.
+Function Overview
+Function	Purpose
+validate_variant_refseq()	- Validates a variant using VariantValidator's RefSeq endpoint.
+validate_variant_ensembl()	- Validates a variant using VariantValidator's Ensembl endpoint.
+validate_hgvs_variant()	- Attempts RefSeq validation first; if it fails, falls back to Ensembl.
+search_clinvar_by_hgvs() - Uses ClinVar’s eSearch and eSummary APIs to retrieve clinical data.
+extract_classifications() -	Parses and returns key classifications from ClinVar’s response.
+main() -	Orchestrates input, validation, ClinVar query, classification extraction, and output.
+How to Use  Run the script from the command line using bash script: python script_name.py
+It will prompt for:
+HGVS variant (e.g., NM_000518.5:c.92+1G>A)
+Genome build (GRCh38 or GRCh37)
+
+If valid, it displays the extracted classifications from ClinVar.
+If any step fails, the user is informed with an appropriate message, and detailed errors are logged.
+
+"""
 import requests  # Import requests for HTTP API calls
 import json  # Import json for parsing API responses
 import logging  # Import logging for tracking execution and errors
 from requests.exceptions import Timeout, RequestException  # Specific exceptions for requests
+from logging.handlers import RotatingFileHandler
 
-# Configure logging to write to a file with a detailed format
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("clinvar_validation.log")  # Log to a file named clinvar_validation.log
-    ]
+# Configure logging to use RotatingFileHandler with detailed format
+log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+rotating_handler = RotatingFileHandler(
+"clinvar_validation.log",   # Log file name
+    maxBytes=5 * 1024 * 1024,   # 5 MB file size limit
+    backupCount=3               # Keep 3 backup log files
 )
-logger = logging.getLogger(__name__)  # Create a logger instance
+rotating_handler.setFormatter(log_formatter)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(rotating_handler)
 
 
 def validate_variant_refseq(variant, genome_build):
@@ -213,8 +266,7 @@ def extract_classifications(result_data, uid):
         uid (str): The unique identifier for the result.
 
     Returns:
-        dict: A dictionary with germline_classification, clinical_impact_classification,
-              and oncogenicity_classification.
+        dict: A dictionary with germline_classification, clinical_impact_classification,and oncogenicity_classification.
     """
     # Log the start of classification extraction
     logger.info(f"Extracting classifications for UID: {uid}")
@@ -253,7 +305,8 @@ def extract_classifications(result_data, uid):
 
 
 def main():
-    """Main function to validate an HGVS variant and fetch ClinVar data."""
+    """Main function to validate an HGVS variant and fetch ClinVar data.
+    The user input as a HGVS variant and genome assembly build (GRCh38/GRCh37)"""
     # Log the start of the program
     logger.info("Starting ClinVar search program")
     try:
