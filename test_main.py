@@ -1,12 +1,4 @@
-""" This test suite, written in Python using the unittest framework,
-validates the search_clinvar_by_hgvs function, which queries the NCBI ClinVar API for HGVS variant data.
-It includes seven test cases that cover key scenarios: successful API calls with valid input,
-input validation for empty or non-string variants, handling of no results, and error conditions like timeouts,
-general request exceptions, and JSON decode errors. The tests use unittest.mock to simulate API responses without real
-network calls, ensuring reliable and repeatable results.
-Have included Inline comments to explain each test's purpose, mock configurations, and assertions,
-verifying that the function returns appropriate data or None, raises exceptions as needed, and logs errors correctly.
-The suite runs via unittest.main() and assumes the function is imported from a module named 'main'. """
+""" unit tests for main.py """
 
 import unittest
 from unittest.mock import patch, Mock
