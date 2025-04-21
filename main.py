@@ -22,6 +22,9 @@ from logging.handlers import RotatingFileHandler
 from variant_validator import validate_hgvs_variant
 from clinvar import search_clinvar_by_hgvs, extract_classifications
 
+from output import extract_gene_symbol
+
+
 # Configure logging to use RotatingFileHandler with detailed format
 log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
@@ -61,6 +64,9 @@ def main():
         # Validate the HGVS variant using VariantValidator
         validation_result = validate_hgvs_variant(hgvs_variant, genome_build)
 
+        import pprint
+        pprint.pprint(validation_result)
+
         # Check if validation failed
         if not validation_result:
             logger.error(f"Validation failed for '{hgvs_variant}'")
@@ -71,6 +77,14 @@ def main():
         logger.info(f"Validation successful for '{hgvs_variant}'")
         print(
             f"HGVS variant '{hgvs_variant}' validated successfully for {genome_build}. Proceeding to ClinVar search...")
+        # Extract gene symbol from VV response
+        gene_symbol = extract_gene_symbol(validation_result)
+        if not gene_symbol:
+            logger.warning(f"No gene symbol found for '{hgvs_variant}'")
+            print("Gene Symbol: Not available — the variant may be intronic or unrecognized by transcript")
+            gene_symbol = "N/A"
+        else:
+            print(f"Gene Symbol: {gene_symbol}")
 
         # Query ClinVar with the validated variant
         clinvar_results = search_clinvar_by_hgvs(hgvs_variant)
