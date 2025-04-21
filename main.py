@@ -9,6 +9,7 @@ This script coordinates input collection, variant validation, ClinVar query, and
 It uses external modules:
 - variant_validator.py for HGVS variant validation
 - clinvar.py for ClinVar querying and classification extraction
+- output.py for gene symbol extraction and formatting
 
 Logging is enabled to 'clinvar_validation.log' with rotating file support.
 Run via: python main.py
@@ -17,12 +18,11 @@ Run via: python main.py
 """
 
 import logging  # Import logging for tracking execution and errors
-from requests.exceptions import Timeout, RequestException  # Specific exceptions for requests
+from requests.exceptions import Timeout, RequestException # Specific exceptions for requests
 from logging.handlers import RotatingFileHandler
 from variant_validator import validate_hgvs_variant
 from clinvar import search_clinvar_by_hgvs, extract_classifications
-
-from output import extract_gene_symbol
+from output import extract_gene_symbol, format_results
 
 
 # Configure logging to use RotatingFileHandler with detailed format
@@ -47,8 +47,7 @@ def main():
     logger.info("Starting ClinVar search program")
     try:
         # Prompt user for HGVS variant and remove whitespace
-        hgvs_variant = input(
-            "Enter the HGVS variant (e.g., NM_000518.5:c.92+1G>A): ").strip()
+        hgvs_variant = input("Enter the HGVS variant (e.g., NM_000518.5:c.92+1G>A): ").strip()
         # Prompt user for genome build and convert to uppercase
         genome_build = input("Enter the genome build (GRCh38 or GRCh37): ").strip().upper()
         logger.info(f"User input - HGVS variant: '{hgvs_variant}', Genome build: '{genome_build}'")
@@ -61,11 +60,8 @@ def main():
             logger.error(f"Invalid genome build: {genome_build}")
             raise ValueError("Genome build must be GRCh38 or GRCh37")
 
-        # Validate the HGVS variant using VariantValidator
+        # Step 1: Validate the HGVS variant using VariantValidator
         validation_result = validate_hgvs_variant(hgvs_variant, genome_build)
-
-        import pprint
-        pprint.pprint(validation_result)
 
         # Check if validation failed
         if not validation_result:
@@ -77,7 +73,8 @@ def main():
         logger.info(f"Validation successful for '{hgvs_variant}'")
         print(
             f"HGVS variant '{hgvs_variant}' validated successfully for {genome_build}. Proceeding to ClinVar search...")
-        # Extract gene symbol from VV response
+
+        # Step 2: Extract gene symbol from VV response
         gene_symbol = extract_gene_symbol(validation_result)
         if not gene_symbol:
             logger.warning(f"No gene symbol found for '{hgvs_variant}'")
@@ -86,8 +83,12 @@ def main():
         else:
             print(f"Gene Symbol: {gene_symbol}")
 
-        # Query ClinVar with the validated variant
+        # Step 3: Query ClinVar with the validated variant
         clinvar_results = search_clinvar_by_hgvs(hgvs_variant)
+
+        print("\nRaw ClinVar results:")
+        import pprint
+        pprint.pprint(clinvar_results)
 
         # Check if ClinVar returned valid results
         if clinvar_results and 'result' in clinvar_results and clinvar_results['result'] and 'uids' in clinvar_results[
@@ -99,16 +100,20 @@ def main():
 
             # Extract classifications from the result data
             classifications = extract_classifications(result_data, result_uid)
+            print("\nExtracted classifications:")
+            import pprint
+            pprint.pprint(classifications)
+
             if classifications is None:
                 logger.error(f"Failed to extract classifications for '{hgvs_variant}'")
                 print("Error: Failed to extract classifications from ClinVar data.")
                 return
+            # Step 4: Format output
+            result_summary = format_results(gene_symbol, classifications)
+            print("\nFinal Output Summary:")
+            for key, value in result_summary.items():
+                print(f"{key.capitalize().replace('_', ' ')}: {value}")
 
-            # Display ClinVar results to the user
-            print(f"\nClinVar Results for HGVS variant '{hgvs_variant}' (UID: {classifications['uid']}):")
-            print(f"Germline Classification: {classifications['germline_classification']}")
-            print(f"Clinical Impact Classification: {classifications['clinical_impact_classification']}")
-            print(f"Oncogenicity Classification: {classifications['oncogenicity_classification']}")
             logger.info(f"Successfully displayed ClinVar results for '{hgvs_variant}'")
         else:
             # Inform user if no ClinVar results were found
@@ -130,7 +135,6 @@ def main():
     finally:
         # Log the end of the program execution
         logger.info("ClinVar search program completed")
-
 
 if __name__ == "__main__":
     # Run the main function if the script is executed directly

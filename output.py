@@ -47,3 +47,36 @@ def extract_gene_symbol(validation_response):
     except Exception as e:
         logger.error(f"Error extracting gene symbol: {e}")
     return None
+
+def format_results(gene_symbol, classifications):
+    """
+    Combines gene symbol and ClinVar classifications into a single output dictionary.
+
+    Parameters
+    ----------
+    gene_symbol : str
+        The gene symbol (e.g. 'HBB'). If missing, use 'N/A'.
+
+    classifications : dict
+        The ClinVar classification dictionary returned by extract_classifications().
+        Expected keys: 'uid', 'germline_classification', 'clinical_impact_classification', 'oncogenicity_classification'
+
+    Returns
+    -------
+    dict
+        A dictionary combining gene and classification info, e.g.:
+        {
+            'gene': 'HBB',
+            'variant_uid': '12345',
+            'germline': 'Pathogenic',
+            'clinical_impact': 'Likely pathogenic',
+            'oncogenicity': 'Uncertain significance'
+        }
+    """
+    return {
+        "gene": gene_symbol or "N/A",
+        "variant_uid": classifications.get("uid", "N/A"),
+        "germline": classifications.get("germline_classification", "N/A"),
+        "clinical_impact": classifications.get("clinical_impact_classification", "N/A"),
+        "oncogenicity": classifications.get("oncogenicity_classification", "N/A")
+    }
