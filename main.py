@@ -10,6 +10,7 @@ It uses external modules:
 - variant_validator.py for HGVS variant validation
 - clinvar.py for ClinVar querying and classification extraction
 - output.py for gene symbol extraction and formatting
+**Final output is formatted using pretty_print_results() from output.py for clear, structured display.
 
 Logging is enabled to 'clinvar_validation.log' with rotating file support.
 Run via: python main.py
@@ -22,7 +23,7 @@ from requests.exceptions import Timeout, RequestException # Specific exceptions 
 from logging.handlers import RotatingFileHandler
 from variant_validator import validate_hgvs_variant
 from clinvar import search_clinvar_by_hgvs, extract_classifications
-from output import extract_gene_symbol, format_results
+from output import extract_gene_symbol, format_results, pretty_print_results
 
 
 # Configure logging to use RotatingFileHandler with detailed format
@@ -80,8 +81,10 @@ def main():
             logger.warning(f"No gene symbol found for '{hgvs_variant}'")
             print("Gene Symbol: Not available — the variant may be intronic or unrecognized by transcript")
             gene_symbol = "N/A"
+            gene_missing = True
         else:
             print(f"Gene Symbol: {gene_symbol}")
+            gene_missing = False
 
         # Step 3: Query ClinVar with the validated variant
         clinvar_results = search_clinvar_by_hgvs(hgvs_variant)
@@ -110,15 +113,15 @@ def main():
                 return
             # Step 4: Format output
             result_summary = format_results(gene_symbol, classifications)
-            print("\nFinal Output Summary:")
-            for key, value in result_summary.items():
-                print(f"{key.capitalize().replace('_', ' ')}: {value}")
+            pretty_print_results(result_summary)
 
             logger.info(f"Successfully displayed ClinVar results for '{hgvs_variant}'")
         else:
             # Inform user if no ClinVar results were found
-            logger.info(f"No ClinVar results found for '{hgvs_variant}'")
+            logger.warning(f"Validation passed, but ClinVar returned no data for '{hgvs_variant}'")
             print(f"No results found for HGVS variant '{hgvs_variant}' in ClinVar.")
+            if gene_missing:
+                print("This variant may not be clinically annotated yet.")
 
     except ValueError as e:
         # Handle input validation errors
