@@ -80,3 +80,30 @@ def format_results(gene_symbol, classifications):
         "clinical_impact": classifications.get("clinical_impact_classification", "N/A"),
         "oncogenicity": classifications.get("oncogenicity_classification", "N/A")
     }
+def pretty_print_results(results):
+    """
+    Nicely formats and prints the result summary returned by format_results().
+
+    Args:
+        results (dict): Formatted dictionary with keys like 'gene', 'germline', etc.
+    """
+    print("\nClinical Variant Summary\n" + "-" * 30)
+
+    print(f"Gene: {results.get('gene', 'N/A')}")
+    print(f"Variant UID: {results.get('variant_uid', 'N/A')}\n")
+
+    # Define a helper to print classification details
+    def print_classification(title, data):
+        print(f"{title}")
+        if not isinstance(data, dict):
+            print("   No data available.\n")
+            return
+        for k, v in data.items():
+            label = k.replace("_", " ").capitalize()
+            print(f"   {label}: {v}")
+        print()  # Line break between sections
+
+    # Print each classification
+    print_classification("Germline Classification", results.get("germline"))
+    print_classification("Clinical Impact Classification", results.get("clinical_impact"))
+    print_classification("Oncogenicity Classification", results.get("oncogenicity"))
