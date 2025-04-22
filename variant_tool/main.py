@@ -19,10 +19,9 @@ Run via: python main.py
 """
 
 import logging  # Import logging for tracking execution and errors
-from requests.exceptions import Timeout, RequestException # Specific exceptions for requests
 from logging.handlers import RotatingFileHandler
 from variant_validator import validate_hgvs_variant
-from clinvar import search_clinvar_by_hgvs, extract_classifications
+from variant_tool.clinvar import search_clinvar_by_hgvs, extract_classifications
 from output import extract_gene_symbol, format_results, pretty_print_results
 
 
@@ -30,7 +29,7 @@ from output import extract_gene_symbol, format_results, pretty_print_results
 log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
 rotating_handler = RotatingFileHandler(
-"clinvar_validation.log",   # Log file name
+    "../clinvar_validation.log",   # Log file name
     maxBytes=5 * 1024 * 1024,   # 5 MB file size limit
     backupCount=3               # Keep 3 backup log files
 )
@@ -91,7 +90,7 @@ def main():
 
         print("\nRaw ClinVar results:")
         import pprint
-        pprint.pprint(clinvar_results)
+        #pprint.pprint(clinvar_results)
 
         # Check if ClinVar returned valid results
         if clinvar_results and 'result' in clinvar_results and clinvar_results['result'] and 'uids' in clinvar_results[
@@ -105,7 +104,7 @@ def main():
             classifications = extract_classifications(result_data, result_uid)
             print("\nExtracted classifications:")
             import pprint
-            pprint.pprint(classifications)
+            #pprint.pprint(classifications)
 
             if classifications is None:
                 logger.error(f"Failed to extract classifications for '{hgvs_variant}'")
@@ -113,6 +112,7 @@ def main():
                 return
             # Step 4: Format output
             result_summary = format_results(gene_symbol, classifications)
+            # Display final output
             pretty_print_results(result_summary)
 
             logger.info(f"Successfully displayed ClinVar results for '{hgvs_variant}'")
