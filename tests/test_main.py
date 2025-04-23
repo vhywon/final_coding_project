@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import patch, Mock
 import json
 import requests
-from main import search_clinvar_by_hgvs
+from variant_tool.clinvar import search_clinvar_by_hgvs
 
 
 class TestSearchClinvarByHgvs(unittest.TestCase):

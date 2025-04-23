@@ -14,7 +14,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import unittest
-from output import format_results, pretty_print_results
+from variant_tool.output import format_results, pretty_print_results
 
 class TestOutputFormatting(unittest.TestCase):
 
@@ -44,6 +44,19 @@ class TestOutputFormatting(unittest.TestCase):
             "oncogenicity": {"description": "Likely oncogenic"}
         }
         pretty_print_results(summary)  # Should not raise exceptions
+
+    def test_format_results_sample(self):
+        sample_gene = "HBB"
+        sample_classifications = {
+            "uid": "15436",
+            "germline_classification": {"description": "Pathogenic"},
+            "clinical_impact_classification": {},
+            "oncogenicity_classification": {}
+        }
+        result = format_results(sample_gene, sample_classifications)
+        assert result["gene"] == "HBB"
+        assert result["variant_uid"] == "15436"
+        assert "germline" in result
 
 if __name__ == '__main__':
     unittest.main()
